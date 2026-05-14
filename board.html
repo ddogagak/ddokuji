@@ -47,6 +47,17 @@
       margin-top: 8px;
     }
 
+    .badge {
+      background: #ff4fb5;
+      color: #111;
+      font-weight: 900;
+      padding: 10px 16px;
+      transform: skew(-14deg);
+      text-transform: uppercase;
+    }
+
+
+
     .top-links {
       display: flex;
       gap: 8px;
@@ -58,15 +69,6 @@
     .top-title {
       color: #1cecf4;
       font-weight: 900;
-    }
-
-    .badge {
-      background: #ff4fb5;
-      color: #111;
-      font-weight: 900;
-      padding: 10px 16px;
-      transform: skew(-14deg);
-      text-transform: uppercase;
     }
 
     .page-grid {
@@ -646,14 +648,44 @@
     }
 
     @media (max-width: 980px) {
-      .page-grid { grid-template-columns: 1fr; }
+  
+
+    .top-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .top-title {
+      color: #1cecf4;
+      font-weight: 900;
+    }
+
+    .page-grid { grid-template-columns: 1fr; }
       .board { grid-template-columns: repeat(10, 100px); }
       .title { font-size: 48px; }
       .title span { font-size: 34px; }
     }
 
     @media (max-width: 640px) {
-      .page-grid { grid-template-columns: 1fr; }
+  
+
+    .top-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .top-title {
+      color: #1cecf4;
+      font-weight: 900;
+    }
+
+    .page-grid { grid-template-columns: 1fr; }
       .row { grid-template-columns: 1fr; }
       .board { grid-template-columns: repeat(10, 92px); }
       .hero { flex-direction: column; align-items: flex-start; }
@@ -676,8 +708,8 @@
 <body>
   <div class="wrap">
     <div class="top-links">
-      <button class="secondary" onclick="location.href='index.html'">메인으로</button>
-      <button class="secondary" id="goResultsBtn">전체 결과 보기</button>
+      <button class="secondary" type="button" onclick="location.href='index.html'">메인으로</button>
+      <button class="secondary" type="button" id="goResultsBtn">전체 결과 보기</button>
       <span class="top-title" id="boardTitleText">보드 로딩중...</span>
     </div>
 
@@ -776,13 +808,13 @@
           </div>
 
           <div class="btns" style="margin-top:10px;">
-            <button class="secondary" id="buildPrizeInputsBtn">상품생성</button>
+            <button class="secondary" id="buildPrizeInputsBtn" type="button">상품생성</button>
           </div>
 
           <div id="prizeInputsWrap"></div>
 
           <div class="btns">
-            <button class="primary" id="generateBtn">새 판 생성</button>
+            <button class="primary" id="generateBtn" type="button">새 판 생성</button>
           </div>
         </div>
       </div>
@@ -813,7 +845,6 @@
     const SUPABASE_URL = 'https://txcdfbvcwjazatbfstak.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_coRT89OfO2B31KcbO3DaBw_Z8ccF1uT';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     const boardId = new URLSearchParams(location.search).get('id');
     let boardTitle = '';
     let initialLoading = true;
@@ -1089,23 +1120,23 @@
       renderAll();
     }
 
-    function saveState(showMsg) {
+    async function saveState(showMsg) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
       if (boardId && !initialLoading) {
-        supabaseClient
+        const { error } = await supabaseClient
           .from('kuji_boards')
           .update({
             state: state,
             updated_at: new Date().toISOString()
           })
-          .eq('id', boardId)
-          .then(({ error }) => {
-            if (error) {
-              console.error('Supabase save error:', error);
-              alert('DB 저장 실패: ' + error.message);
-            }
-          });
+          .eq('id', boardId);
+
+        if (error) {
+          console.error(error);
+          alert('DB 저장 실패: ' + error.message);
+          return;
+        }
       }
 
       if (showMsg !== false) alert('저장했어.');
@@ -1314,42 +1345,39 @@
       slot.openedBy = pendingResult.nickname;
       slot.openedAt = pendingResult.openedAt;
 
-      const log = {
+      state.logs.unshift({
         nickname: pendingResult.nickname,
         position: pendingResult.position,
         number: pendingResult.number,
         reward: pendingResult.reward,
         openedAt: pendingResult.openedAt
-      };
+      });
 
-      state.logs.unshift(log);
+      const resultToSave = pendingResult;
+      pendingResult = null;
+      saveState(false);
+      renderAll();
 
-      if (boardId) {
-        const display = rewardDisplay(log.number);
-
+      if (boardId && resultToSave) {
         supabaseClient
           .from('kuji_results')
           .insert({
             board_id: boardId,
-            nickname: log.nickname,
-            position: log.position,
-            number: log.number,
-            reward: log.reward,
-            custom_number: log.number === 0 ? null : display.numberLabel,
-            product_name: log.number === 0 ? null : display.productName,
-            opened_at: log.openedAt
+            nickname: resultToSave.nickname,
+            position: resultToSave.position,
+            number: resultToSave.number,
+            reward: resultToSave.reward,
+            custom_number: state.rewards[resultToSave.number]?.customNumber || null,
+            product_name: state.rewards[resultToSave.number]?.productName || null,
+            opened_at: resultToSave.openedAt
           })
           .then(({ error }) => {
             if (error) {
-              console.error('Result save error:', error);
+              console.error(error);
               alert('결과 저장 실패: ' + error.message);
             }
           });
       }
-
-      pendingResult = null;
-      saveState(false);
-      renderAll();
     }
 
     function shuffleUnopenedSlots() {
@@ -1611,7 +1639,6 @@
         renderPrizeInputs(state.numberPool || 0, state.rewards || {});
         renderAll();
       } else {
-        initialLoading = false;
         generateBoard();
       }
 
