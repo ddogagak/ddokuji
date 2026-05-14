@@ -22,19 +22,6 @@
       padding: 8px 8px 24px;
     }
 
-    .top-links {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-
-    .top-title {
-      color: #1cecf4;
-      font-weight: 900;
-    }
-
     .hero {
       display: flex;
       align-items: end;
@@ -58,6 +45,19 @@
       color: #ff4fb5;
       font-size: 46px;
       margin-top: 8px;
+    }
+
+    .top-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .top-title {
+      color: #1cecf4;
+      font-weight: 900;
     }
 
     .badge {
@@ -683,7 +683,7 @@
 
     <div class="hero">
       <div class="title">DDOPAMINE<span>DDOKUJI</span></div>
-      <div class="badge" id="boardNameBadge">보드 로딩중...</div>
+      <div class="badge" id="boardBadge">BOARD LOADING...</div>
     </div>
 
     <div class="page-grid">
@@ -808,14 +808,15 @@
   </div>
 
   <script>
+    const STORAGE_KEY = 'offline_kuji_state_v18';
+
     const SUPABASE_URL = 'https://txcdfbvcwjazatbfstak.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_coRT89OfO2B31KcbO3DaBw_Z8ccF1uT';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'offline_kuji_state_v18';
     const boardId = new URLSearchParams(location.search).get('id');
     let boardTitle = '';
-    let saving = false;
+    let initialLoading = true;
 
     const el = {
       queueInput: document.getElementById('queueInput'),
@@ -852,7 +853,7 @@
       imageBox: document.getElementById('imageBox'),
       imageInput: document.getElementById('imageInput'),
       goResultsBtn: document.getElementById('goResultsBtn'),
-      boardNameBadge: document.getElementById('boardNameBadge'),
+      boardBadge: document.getElementById('boardBadge'),
       boardTitleText: document.getElementById('boardTitleText')
     };
 
@@ -1088,75 +1089,26 @@
       renderAll();
     }
 
-    async function saveState(showMsg) {
+    function saveState(showMsg) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
-      if (boardId && !saving) {
-        saving = true;
-        try {
-          const { error } = await supabase
-            .from('kuji_boards')
-            .update({
-              state: state,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', boardId);
-
-          if (error) throw error;
-        } catch (err) {
-          console.error(err);
-          alert('DB 저장 실패: ' + err.message);
-        } finally {
-          saving = false;
-        }
+      if (boardId && !initialLoading) {
+        supabaseClient
+          .from('kuji_boards')
+          .update({
+            state: state,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', boardId)
+          .then(({ error }) => {
+            if (error) {
+              console.error('Supabase save error:', error);
+              alert('DB 저장 실패: ' + error.message);
+            }
+          });
       }
 
       if (showMsg !== false) alert('저장했어.');
-    }
-
-    async function loadBoardFromDb() {
-      if (!boardId) {
-        alert('보드 id가 없어. 메인으로 돌아갈게.');
-        location.href = 'index.html';
-        return false;
-      }
-
-      const { data, error } = await supabase
-        .from('kuji_boards')
-        .select('*')
-        .eq('id', boardId)
-        .eq('status', 'active')
-        .maybeSingle();
-
-      if (error || !data) {
-        console.error(error);
-        alert('보드를 찾을 수 없어.');
-        location.href = 'index.html';
-        return false;
-      }
-
-      boardTitle = data.title || '';
-      el.boardNameBadge.textContent = boardTitle || 'DDOKUJI';
-      el.boardTitleText.textContent = '현재 쿠지판: ' + (boardTitle || '-');
-
-      if (data.state) {
-        state = data.state;
-        if (!Array.isArray(state.queue)) state.queue = [];
-        if (!Array.isArray(state.logs)) state.logs = [];
-        if (!Array.isArray(state.slots)) state.slots = [];
-        if (!state.rewards) state.rewards = {};
-        if (!state.prizeImage) state.prizeImage = '';
-
-        el.slotCount.value = state.slotCount || 30;
-        el.prizeCount.value = state.numberPool || 0;
-        el.columns.value = state.columns || 10;
-        el.queueInput.value = state.queue.join(' - ');
-        renderPrizeInputs(state.numberPool || 0, state.rewards || {});
-        renderAll();
-        return true;
-      }
-
-      return false;
     }
 
     function loadState(showMsg) {
@@ -1284,7 +1236,7 @@
       }
 
       el.logBox.innerHTML = state.logs.map(log =>
-        '<div class="item"><b><a style="color:#111" href="user.html?board_id=' + boardId + '&nickname=' + encodeURIComponent(log.nickname) + '">' + escapeHtml(log.nickname) + '</a></b> 님이 <b>' + log.position + '번</b> 오픈<br>결과: <b>' + escapeHtml(log.reward) + '</b><br><span class="muted">' + escapeHtml(formatTime(log.openedAt)) + '</span></div>'
+        '<div class="item"><b>' + escapeHtml(log.nickname) + '</b> 님이 <b>' + log.position + '번</b> 오픈<br>결과: <b>' + escapeHtml(log.reward) + '</b><br><span class="muted">' + escapeHtml(formatTime(log.openedAt)) + '</span></div>'
       ).join('');
     }
 
@@ -1344,7 +1296,7 @@
       renderImageBox();
     }
 
-    async function commitPendingResult() {
+    function commitPendingResult() {
       if (!pendingResult) return;
 
       const slot = state.slots.find(s => s.position === pendingResult.position);
@@ -1362,39 +1314,42 @@
       slot.openedBy = pendingResult.nickname;
       slot.openedAt = pendingResult.openedAt;
 
-      state.logs.unshift({
+      const log = {
         nickname: pendingResult.nickname,
         position: pendingResult.position,
         number: pendingResult.number,
         reward: pendingResult.reward,
         openedAt: pendingResult.openedAt
-      });
+      };
 
-      const resultToSave = pendingResult;
-      pendingResult = null;
-      await saveState(false);
-      renderAll();
+      state.logs.unshift(log);
 
-      if (boardId && resultToSave) {
-        const display = rewardDisplay(resultToSave.number);
-        const { error } = await supabase
+      if (boardId) {
+        const display = rewardDisplay(log.number);
+
+        supabaseClient
           .from('kuji_results')
           .insert({
             board_id: boardId,
-            nickname: resultToSave.nickname,
-            position: resultToSave.position,
-            number: resultToSave.number,
-            reward: resultToSave.reward,
-            custom_number: resultToSave.number === 0 ? null : display.numberLabel,
-            product_name: resultToSave.number === 0 ? null : display.productName,
-            opened_at: resultToSave.openedAt
+            nickname: log.nickname,
+            position: log.position,
+            number: log.number,
+            reward: log.reward,
+            custom_number: log.number === 0 ? null : display.numberLabel,
+            product_name: log.number === 0 ? null : display.productName,
+            opened_at: log.openedAt
+          })
+          .then(({ error }) => {
+            if (error) {
+              console.error('Result save error:', error);
+              alert('결과 저장 실패: ' + error.message);
+            }
           });
-
-        if (error) {
-          console.error(error);
-          alert('결과 저장 실패: ' + error.message);
-        }
       }
+
+      pendingResult = null;
+      saveState(false);
+      renderAll();
     }
 
     function shuffleUnopenedSlots() {
@@ -1598,6 +1553,10 @@
     });
 
     el.goResultsBtn.addEventListener('click', function() {
+      if (!boardId) {
+        alert('보드 ID가 없어.');
+        return;
+      }
       location.href = 'results.html?board_id=' + boardId;
     });
 
@@ -1613,15 +1572,53 @@
 
     toggleSettings(true);
 
-    (async function initBoard() {
-      const loaded = await loadBoardFromDb();
-
-      if (!loaded || !state.slots || !state.slots.length) {
-        generateBoard();
-      } else {
-        renderAll();
+    async function loadBoardFromSupabase() {
+      if (!boardId) {
+        alert('보드 ID가 없어. 메인에서 쿠지판을 다시 열어줘.');
+        location.href = 'index.html';
+        return;
       }
-    })();
+
+      const { data, error } = await supabaseClient
+        .from('kuji_boards')
+        .select('*')
+        .eq('id', boardId)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.error(error);
+        alert('보드를 찾을 수 없어.');
+        location.href = 'index.html';
+        return;
+      }
+
+      boardTitle = data.title || 'DDOKUJI';
+      el.boardBadge.textContent = boardTitle;
+      el.boardTitleText.textContent = '현재 쿠지판: ' + boardTitle;
+      document.title = boardTitle + ' - DDOKUJI';
+
+      if (data.state && Array.isArray(data.state.slots) && data.state.slots.length) {
+        state = data.state;
+
+        if (!Array.isArray(state.queue)) state.queue = [];
+        if (!state.prizeImage) state.prizeImage = '';
+
+        el.slotCount.value = state.slotCount || 30;
+        el.prizeCount.value = state.numberPool || 0;
+        el.columns.value = state.columns || 10;
+        el.queueInput.value = state.queue.join(' - ');
+
+        renderPrizeInputs(state.numberPool || 0, state.rewards || {});
+        renderAll();
+      } else {
+        initialLoading = false;
+        generateBoard();
+      }
+
+      initialLoading = false;
+    }
+
+    loadBoardFromSupabase();
   </script>
 </body>
 </html>
