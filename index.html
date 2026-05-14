@@ -3,6 +3,245 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DDOKUJI BOARDS</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { margin:0; background:#111; color:#f5f5f5; font-family:Arial; }
+    .wrap { padding:16px; }
+    .btn { background:#ff4fb5; color:#111; border:0; padding:10px 12px; font-weight:900; cursor:pointer; }
+    .btn2 { background:#1cecf4; color:#111; border:0; padding:8px 10px; font-weight:900; cursor:pointer; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:12px; }
+    .card { background:#181818; border:2px solid #1cecf4; box-shadow:8px 8px 0 #ff40ae; padding:12px; }
+    .error { background:#ffdddd; color:#111; padding:10px; margin:10px 0; display:none; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>쿠지판 목록</h1>
+
+    <div id="errorBox" class="error"></div>
+
+    <button class="btn" id="newBtn">새 쿠지판 만들기</button>
+    <button class="btn btn2" id="importBtn" style="display:none">기존 쿠지판 가져오기</button>
+
+    <div id="list" class="grid"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://txcdfbvcwjazatbfstak.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_coRT89OfO2B31KcbO3DaBw_Z8ccF1uT";
+
+    const STORAGE_KEY = "offline_kuji_state_v18";
+
+    const errorBox = document.getElementById("errorBox");
+    const listEl = document.getElementById("list");
+    const newBtn = document.getElementById("newBtn");
+    const importBtn = document.getElementById("importBtn");
+
+    function showError(message) {
+      errorBox.style.display = "block";
+      errorBox.textContent = message;
+      console.error(message);
+    }
+
+    if (!window.supabase) {
+      showError("Supabase JS가 로드되지 않았어. 인터넷/CDN 문제일 수 있어.");
+    }
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    const defaultState = {
+      slotCount: 30,
+      numberPool: 5,
+      columns: 10,
+      rewards: {},
+      slots: Array.from({ length: 30 }, (_, i) => ({
+        position: i + 1,
+        number: 0,
+        opened: false,
+        openedBy: "",
+        openedAt: ""
+      })),
+      logs: [],
+      queue: [],
+      prizeImage: ""
+    };
+
+    function stats(state) {
+      const total = state.slots?.length || 0;
+      const opened = (state.slots || []).filter(v => v.opened).length;
+      return [total, opened, total - opened];
+    }
+
+    async function loadBoards() {
+      const { data, error } = await supabaseClient
+        .from("kuji_boards")
+        .select("*")
+        .eq("status", "active")
+        .order("updated_at", { ascending: false });
+
+      if (error) {
+        showError("목록 불러오기 실패: " + error.message);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        listEl.innerHTML = `<div class="card">아직 쿠지판이 없어</div>`;
+        return;
+      }
+
+      listEl.innerHTML = data.map(board => {
+        const [total, opened, remain] = stats(board.state || {});
+        const safeTitle = String(board.title || "").replace(/'/g, "\\'");
+
+        return `
+          <div class="card">
+            <h3>${board.title}</h3>
+            <div>생성일: ${new Date(board.created_at).toLocaleString()}</div>
+            <div>수정일: ${new Date(board.updated_at).toLocaleString()}</div>
+            <div>총 칸 수: ${total} / 오픈: ${opened} / 남은 수: ${remain}</div>
+            <div>상태: ${board.status}</div>
+
+            <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn2" onclick="location.href='board.html?id=${board.id}'">열기</button>
+              <button class="btn2" onclick="location.href='results.html?board_id=${board.id}'">전체 결과</button>
+              <button class="btn2" onclick="renameBoard('${board.id}', '${safeTitle}')">이름변경</button>
+              <button class="btn2" onclick="cloneBoard('${board.id}')">복제</button>
+              <button class="btn2" onclick="deleteBoard('${board.id}')">삭제</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function newBoard(state) {
+      const title = prompt("쿠지판 제목을 입력해줘");
+
+      if (!title) return;
+
+      const { data, error } = await supabaseClient
+        .from("kuji_boards")
+        .insert({
+          title,
+          state: state || defaultState,
+          status: "active"
+        })
+        .select("id")
+        .single();
+
+      if (error) {
+        showError("쿠지판 생성 실패: " + error.message);
+        return;
+      }
+
+      location.href = "board.html?id=" + data.id;
+    }
+
+    async function renameBoard(id, currentTitle) {
+      const newTitle = prompt("새 이름", currentTitle);
+      if (!newTitle) return;
+
+      const { error } = await supabaseClient
+        .from("kuji_boards")
+        .update({
+          title: newTitle,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id);
+
+      if (error) {
+        showError("이름변경 실패: " + error.message);
+      } else {
+        loadBoards();
+      }
+    }
+
+    async function deleteBoard(id) {
+      if (!confirm("삭제할까?")) return;
+
+      const { error } = await supabaseClient
+        .from("kuji_boards")
+        .update({
+          status: "deleted",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id);
+
+      if (error) {
+        showError("삭제 실패: " + error.message);
+      } else {
+        loadBoards();
+      }
+    }
+
+    async function cloneBoard(id) {
+      const { data, error } = await supabaseClient
+        .from("kuji_boards")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        showError("복제 대상 불러오기 실패: " + error.message);
+        return;
+      }
+
+      const keep = confirm("결과/오픈상태까지 그대로 복제할까요?");
+      const copiedState = JSON.parse(JSON.stringify(data.state || defaultState));
+
+      if (!keep) {
+        copiedState.logs = [];
+        (copiedState.slots || []).forEach(slot => {
+          slot.opened = false;
+          slot.openedBy = "";
+          slot.openedAt = "";
+        });
+      }
+
+      const { error: cloneError } = await supabaseClient
+        .from("kuji_boards")
+        .insert({
+          title: data.title + " (복제)",
+          state: copiedState,
+          status: "active"
+        });
+
+      if (cloneError) {
+        showError("복제 실패: " + cloneError.message);
+      } else {
+        loadBoards();
+      }
+    }
+
+    newBtn.addEventListener("click", () => {
+      newBoard();
+    });
+
+    if (localStorage.getItem(STORAGE_KEY)) {
+      importBtn.style.display = "inline-block";
+      importBtn.addEventListener("click", () => {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        newBoard(saved);
+      });
+    }
+
+    window.renameBoard = renameBoard;
+    window.cloneBoard = cloneBoard;
+    window.deleteBoard = deleteBoard;
+
+    loadBoards();
+  </script>
+</body>
+</html><!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>DDOKUJI BOARDS</title>
 
