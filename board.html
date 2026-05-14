@@ -3,53 +3,1625 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DDOPAMINE DDOKUJI - BOARD</title>
+  <title>DDOPAMINE DDOKUJI</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-/* 기존 스타일 유지 */
-* { box-sizing: border-box; }
-body { margin: 0; font-family: Arial, "Malgun Gothic", sans-serif; background: #111; color: #f5f5f5; }
-.wrap { width: 100%; max-width: none; margin: 0; padding: 8px 8px 24px; }
-.hero { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-.title { font-size: 64px; font-weight: 900; line-height: 0.9; letter-spacing: 0.02em; text-transform: uppercase; color: #f4f4f4; text-shadow: 8px 8px 0 rgba(255,255,255,0.05);} 
-.title span { display:block; color:#ff4fb5; font-size:46px; margin-top:8px; }
-.badge { background:#ff4fb5; color:#111; font-weight:900; padding:10px 16px; transform:skew(-14deg); text-transform:uppercase; }
-.top-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
-.top-title{color:#1cecf4;font-weight:900}
-.page-grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:22px;align-items:start}.card{background:#181818;border:2px solid #1cecf4;box-shadow:8px 8px 0 #ff40ae;padding:16px;min-width:0}
-.card-header-pink{margin:-16px -16px 16px;background:#ff4fb5;color:#111;padding:14px 16px;font-size:22px;font-weight:900;text-transform:uppercase}.card-header-cyan{margin:-16px -16px 16px;background:#1cecf4;color:#111;padding:14px 16px;font-size:22px;font-weight:900;text-transform:uppercase}
-.collapsed-header{margin-bottom:-16px}label{display:block;margin:10px 0 6px;font-size:13px;font-weight:700;color:#ff61bc;text-transform:uppercase;letter-spacing:.04em}input{width:100%;padding:10px 12px;border:2px solid #1cecf4;background:#fff;color:#111;font-size:14px;outline:none;min-width:0}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.muted{color:#d2d2d2;font-size:13px;line-height:1.5}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}button{border:none;padding:10px 14px;font-weight:900;cursor:pointer;text-transform:uppercase}.primary{background:#ff4fb5;color:#111}.secondary{background:#1cecf4;color:#111}
-.status{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}.pill{background:#ff4fb5;color:#111;font-weight:900;padding:8px 14px;transform:skew(-14deg);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}.pill>*{transform:skew(14deg)}.pill-text{transform:skew(14deg);display:inline-block}
-.status-heart{width:44px;height:44px;position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:44px;line-height:1;flex:0 0 auto}.status-heart::before{content:'♥';display:block}.status-heart.pending{color:#ff4fb5}.status-heart.done{color:#d9d9d9}.status-heart-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;transform:translateY(1px)}
-.board-header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-16px -16px 16px;background:#1cecf4;color:#111;padding:14px 16px;flex-wrap:wrap}.board-title{font-size:22px;font-weight:900;text-transform:uppercase;min-width:0}.board-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
-.board-pill{transform:skew(-14deg);display:inline-flex;align-items:center;gap:6px}.board-pill span{display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transform:skew(14deg)}.board-pill-label{transform:skew(14deg);white-space:nowrap}.shuffle-pill{border:none;font-size:14px}.random-pick-notice{margin:-4px 0 14px;font-weight:900;color:#ff4fb5}
-.board-shell{background:#f7f7f7;border:4px solid #1cecf4;box-shadow:8px 8px 0 #ff40ae;padding:14px;min-height:320px;width:100%;overflow-x:auto;overflow-y:hidden}.board{display:grid;grid-template-columns:repeat(10,110px);gap:10px;width:max-content;min-width:100%}.ticket{min-height:110px;border:2px solid #111;background:#0f0f0f;color:#111;box-shadow:4px 4px 0 #1cecf4;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-weight:900;cursor:pointer;overflow:hidden;position:relative}.ticket.opened.win{background:linear-gradient(#ffe2f1,#ffc7e6)}.ticket.opened.lose{background:linear-gradient(#dffbff,#bfefff)}.ticket-content{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}.ticket-closed-heart{position:relative;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:70px;color:#ff40ae}.ticket-closed-heart::before{content:'♥'}.ticket-closed-heart-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:900}
-.image-box{width:100%;height:360px;border:2px dashed #1cecf4;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}.image-box img{max-width:100%;max-height:100%;object-fit:contain}.image-box.empty{color:#d2d2d2;font-weight:700;padding:16px;text-align:center}.list{display:grid;gap:8px;max-height:360px;overflow:auto}.item{background:#fff;color:#111;border:2px solid #1cecf4;box-shadow:4px 4px 0 #ff40ae;padding:10px;font-size:13px;line-height:1.5}.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);padding:16px;z-index:9999}.modal.show{display:flex}
-@media (max-width:980px){.page-grid{grid-template-columns:1fr}.board{grid-template-columns:repeat(10,100px)}.title{font-size:48px}.title span{font-size:34px}}@media (max-width:640px){.row{grid-template-columns:1fr}.board{grid-template-columns:repeat(10,92px)}.hero{flex-direction:column;align-items:flex-start}}
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Malgun Gothic", sans-serif;
+      background: #111;
+      color: #f5f5f5;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 8px 8px 24px;
+    }
+
+    .top-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .top-title {
+      color: #1cecf4;
+      font-weight: 900;
+    }
+
+    .hero {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .title {
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #f4f4f4;
+      text-shadow: 8px 8px 0 rgba(255,255,255,0.05);
+    }
+
+    .title span {
+      display: block;
+      color: #ff4fb5;
+      font-size: 46px;
+      margin-top: 8px;
+    }
+
+    .badge {
+      background: #ff4fb5;
+      color: #111;
+      font-weight: 900;
+      padding: 10px 16px;
+      transform: skew(-14deg);
+      text-transform: uppercase;
+    }
+
+    .page-grid {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: #181818;
+      border: 2px solid #1cecf4;
+      box-shadow: 8px 8px 0 #ff40ae;
+      padding: 16px;
+      min-width: 0;
+    }
+
+    .card-header-pink {
+      margin: -16px -16px 16px;
+      background: #ff4fb5;
+      color: #111;
+      padding: 14px 16px;
+      font-size: 22px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .card-header-cyan {
+      margin: -16px -16px 16px;
+      background: #1cecf4;
+      color: #111;
+      padding: 14px 16px;
+      font-size: 22px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .collapsed-header {
+      margin-bottom: -16px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ff61bc;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #1cecf4;
+      background: #fff;
+      color: #111;
+      font-size: 14px;
+      outline: none;
+      min-width: 0;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .muted {
+      color: #d2d2d2;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      padding: 10px 14px;
+      font-weight: 900;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .primary { background: #ff4fb5; color: #111; }
+    .secondary { background: #1cecf4; color: #111; }
+
+    .status {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .pill {
+      background: #ff4fb5;
+      color: #111;
+      font-weight: 900;
+      padding: 8px 14px;
+      transform: skew(-14deg);
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill > * {
+      transform: skew(14deg);
+    }
+
+    .pill-text {
+      transform: skew(14deg);
+      display: inline-block;
+    }
+
+    .status-heart {
+      width: 44px;
+      height: 44px;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .status-heart::before {
+      content: '♥';
+      display: block;
+    }
+
+    .status-heart.pending { color: #ff4fb5; }
+    .status-heart.done { color: #d9d9d9; }
+
+    .status-heart-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 900;
+      transform: translateY(1px);
+    }
+
+    .status-heart.pending .status-heart-label { color: #fff; }
+    .status-heart.done .status-heart-label { color: #111; }
+
+    .board-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -16px -16px 16px;
+      background: #1cecf4;
+      color: #111;
+      padding: 14px 16px;
+      flex-wrap: wrap;
+    }
+
+    .board-title {
+      font-size: 22px;
+      font-weight: 900;
+      text-transform: uppercase;
+      min-width: 0;
+    }
+
+    .board-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .board-pill {
+      transform: skew(-14deg);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .board-pill span {
+      display: inline-block;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transform: skew(14deg);
+    }
+
+    .board-pill-label {
+      transform: skew(14deg);
+      white-space: nowrap;
+    }
+
+    .shuffle-pill {
+      border: none;
+      font-size: 14px;
+    }
+
+    .random-pick-notice {
+      margin: -4px 0 14px;
+      font-weight: 900;
+      color: #ff4fb5;
+    }
+
+    .board-shell {
+      background: #f7f7f7;
+      border: 4px solid #1cecf4;
+      box-shadow: 8px 8px 0 #ff40ae;
+      padding: 14px;
+      min-height: 320px;
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(10, 110px);
+      gap: 10px;
+      width: max-content;
+      min-width: 100%;
+    }
+
+    .board.shuffling {
+      animation: boardShake 0.5s ease;
+    }
+
+    @keyframes boardShake {
+      0% { transform: translateX(0) rotate(0deg); }
+      15% { transform: translateX(-4px) rotate(-0.6deg); }
+      30% { transform: translateX(5px) rotate(0.6deg); }
+      45% { transform: translateX(-5px) rotate(-0.5deg); }
+      60% { transform: translateX(4px) rotate(0.4deg); }
+      75% { transform: translateX(-3px) rotate(-0.3deg); }
+      100% { transform: translateX(0) rotate(0deg); }
+    }
+
+    .ticket {
+      min-height: 110px;
+      border: 2px solid #111;
+      background: #0f0f0f;
+      color: #111;
+      box-shadow: 4px 4px 0 #1cecf4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8px;
+      font-weight: 900;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ticket:hover { transform: translateY(-1px); }
+    .ticket.opened { box-shadow: 4px 4px 0 #ff40ae; }
+    .ticket.opened.win { background: linear-gradient(#ffe2f1, #ffc7e6); }
+    .ticket.opened.lose { background: linear-gradient(#dffbff, #bfefff); }
+    .ticket:disabled { cursor: not-allowed; opacity: 0.97; }
+
+    .ticket.recommended {
+      animation: recommendPulse 1.2s ease-in-out 2;
+      box-shadow: 0 0 0 3px #ff4fb5 inset, 0 0 18px rgba(255,79,181,0.65), 4px 4px 0 #1cecf4;
+    }
+
+    @keyframes recommendPulse {
+      0%   { transform: scale(1); }
+      25%  { transform: scale(1.04); }
+      50%  { transform: scale(1); }
+      75%  { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    .ticket-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .ticket-closed-heart {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 70px;
+      color: #ff40ae;
+      transform: translateY(2px);
+    }
+
+    .ticket-closed-heart::before {
+      content: '♥';
+      display: block;
+      line-height: 1;
+    }
+
+    .ticket-closed-heart-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+      z-index: 3;
+      transform: translateY(2px);
+    }
+
+    .ticket-pos { font-size: 12px; }
+
+    .ticket-main {
+      font-size: 16px;
+      font-weight: 900;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      line-height: 1.05;
+    }
+
+    .ticket-main.is-number { font-size: 28px; }
+
+    .ticket-sub {
+      font-size: 11px;
+      line-height: 1.15;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .ticket-main.is-ddong {
+      font-size: 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .image-box {
+      width: 100%;
+      height: 360px;
+      border: 2px dashed #1cecf4;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .image-box.empty {
+      color: #d2d2d2;
+      font-weight: 700;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+      max-height: 360px;
+      overflow: auto;
+    }
+
+    .item {
+      background: #fff;
+      color: #111;
+      border: 2px solid #1cecf4;
+      box-shadow: 4px 4px 0 #ff40ae;
+      padding: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      padding: 16px;
+      z-index: 9999;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-card {
+      width: min(480px, 100%);
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      text-align: center;
+      position: relative;
+      z-index: 10000;
+    }
+
+    .result-ticket {
+      position: relative;
+      background: #fffaf4;
+      color: #111;
+      border: 3px solid #1cecf4;
+      box-shadow: 10px 10px 0 #ff40ae;
+      padding: 24px 24px 20px;
+      clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0 calc(100% - 18px), 0 18px);
+    }
+
+    .reveal-wrap {
+      width: min(340px, 100%);
+      margin: 0 auto 14px;
+      position: relative;
+      border: 3px solid #111;
+      box-shadow: 6px 6px 0 #ff40ae;
+      overflow: hidden;
+      background: #fff;
+      user-select: none;
+      touch-action: none;
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
+      z-index: 2;
+      --reveal-x: 0px;
+    }
+
+    .reveal-base {
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      gap: 10px;
+      padding: 18px;
+      background: linear-gradient(#fff5fb, #ffe1f0);
+    }
+
+    .reveal-base.lose {
+      background: linear-gradient(#fff5fb, #ffe1f0);
+    }
+
+    .reveal-result-line,
+    .reveal-result-ddong {
+      width: 100%;
+      padding-left: 18px;
+      padding-right: 18px;
+      color: #ff4fb5;
+      text-align: left;
+    }
+
+    .reveal-result-inline {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 10px;
+      align-items: stretch;
+      min-height: 120px;
+    }
+
+    .reveal-result-number {
+      font-size: 42px;
+      line-height: 1.15;
+      font-weight: 900;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+    }
+
+    .reveal-result-name {
+      font-size: 28px;
+      line-height: 1.3;
+      font-weight: 800;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .reveal-result-ddong {
+      font-size: 42px;
+      line-height: 1.15;
+      font-weight: 900;
+    }
+
+    .reveal-paper {
+      position: absolute;
+      inset: 0 0 0 auto;
+      width: calc(100% - var(--reveal-x));
+      min-width: 0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.045) 0px,
+          rgba(255,255,255,0.045) 2px,
+          rgba(0,0,0,0) 2px,
+          rgba(0,0,0,0) 10px
+        ),
+        linear-gradient(180deg, #0e0e0e 0%, #222 100%);
+      z-index: 3;
+      pointer-events: none;
+      box-shadow: inset 1px 0 0 rgba(255,255,255,0.08);
+    }
+
+    .reveal-paper::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -18px;
+      width: 28px;
+      height: 100%;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          rgba(255,255,255,0.06) 0px,
+          rgba(255,255,255,0.06) 6px,
+          rgba(0,0,0,0) 6px,
+          rgba(0,0,0,0) 13px
+        ),
+        linear-gradient(180deg, #0e0e0e 0%, #222 100%);
+      clip-path: polygon(65% 0, 8% 4%, 58% 11%, 14% 18%, 72% 27%, 21% 36%, 74% 45%, 12% 54%, 68% 64%, 18% 74%, 70% 84%, 10% 93%, 60% 100%, 100% 100%, 100% 0);
+      filter: drop-shadow(-1px 0 0 rgba(255,255,255,0.08));
+    }
+
+    .reveal-paper::after {
+      content: '→ 오른쪽으로 드래그';
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.82);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      text-shadow: 0 0 8px rgba(255,79,181,0.18);
+    }
+
+    .reveal-paper.done::after { display: none; }
+
+    .reveal-hit {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      cursor: ew-resize;
+      background: transparent;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .reveal-wrap.dragging {
+      box-shadow: 6px 6px 0 #ff40ae, 0 0 0 2px rgba(255,79,181,0.28) inset, 0 0 18px rgba(255,79,181,0.18);
+      transform: translateY(-1px);
+    }
+
+    .reveal-wrap.dragging .reveal-paper {
+      filter: brightness(1.06);
+    }
+
+    @media (max-width: 980px) {
+      .page-grid { grid-template-columns: 1fr; }
+      .board { grid-template-columns: repeat(10, 100px); }
+      .title { font-size: 48px; }
+      .title span { font-size: 34px; }
+    }
+
+    @media (max-width: 640px) {
+      .page-grid { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
+      .board { grid-template-columns: repeat(10, 92px); }
+      .hero { flex-direction: column; align-items: flex-start; }
+      .wrap { padding: 4px 4px 18px; }
+      .card { padding: 10px; }
+      .card-header-pink,
+      .card-header-cyan { margin: -10px -10px 10px; padding: 12px 10px; }
+      .board-shell { padding: 8px; }
+      .status { gap: 6px; }
+      .pill { padding: 6px 10px; font-size: 12px; }
+      .image-box { height: 260px; }
+      .board-controls { width: 100%; }
+      .board-pill span { max-width: 110px; }
+      .reveal-result-number { font-size: 34px; }
+      .reveal-result-name { font-size: 23px; }
+      .reveal-result-ddong { font-size: 34px; }
+    }
   </style>
 </head>
 <body>
-<div class="wrap"><div class="top-links"><button class="secondary" onclick="location.href='index.html'">메인으로</button><button class="secondary" id="goResultsBtn">전체 결과 보기</button><span class="top-title" id="boardTitleText">보드 로딩중...</span></div>
-<div class="hero"><div class="title">DDOPAMINE<span>DDOKUJI</span></div><div class="badge">2nd DDOKUJI</div></div>
-<!-- 기존 HTML 본문 유지(요약) -->
-<div class="page-grid"><div class="card"><div class="card-header-pink">줄</div><label for="queueInput" style="margin:0 0 6px;">줄 입력</label><div style="display:flex;gap:8px;"><input id="queueInput"/><button class="secondary" id="queueApplyBtn">확인</button></div></div><div class="card"><div class="card-header-cyan">줄현황판</div><div style="display:grid;grid-template-columns:1fr 88px;gap:8px;"><div id="queueBoard" style="min-height:42px;border:2px solid #1cecf4;background:#fff;color:#111;padding:10px 12px;">줄 없음</div><button class="secondary" id="queueNextBtn">탈</button></div></div><div class="card"><div class="card-header-cyan">Lucky Number</div><div id="imageBox" class="image-box empty">이미지 업로드</div><input type="file" id="imageInput" accept="image/*" style="display:none;" /></div><div class="card"><div class="board-header-row"><div class="board-title">DDOPAMINE DDOKUJI BOARD</div><div class="board-controls"><div class="pill board-pill"><span class="board-pill-label">현재 진행자 :</span><span id="currentNickDisplay">-</span></div><button class="pill board-pill shuffle-pill" id="shuffleBtn" type="button"><span>Shuffle</span></button><button class="pill board-pill shuffle-pill" id="randomPickBtn" type="button"><span>Random Pick</span></button></div></div><div class="status" id="statusBar"><div class="pill" id="statusTotal"><span class="pill-text">총 0장</span></div><div class="pill" id="statusOpen"><span class="pill-text">오픈 0장</span></div></div><div id="randomPickNotice" class="random-pick-notice">추천: -</div><div class="board-shell"><div class="board" id="board"></div></div></div><div class="card"><div class="card-header-pink" style="display:flex;justify-content:space-between;"><span>Open Log</span><button type="button" class="secondary" id="downloadLogBtn" style="padding:6px 10px;font-size:12px;">Download</button></div><div class="list" id="logBox"></div></div></div></div>
-<script>
+  <div class="wrap">
+    <div class="top-links">
+      <button class="secondary" onclick="location.href='index.html'">메인으로</button>
+      <button class="secondary" id="goResultsBtn">전체 결과 보기</button>
+      <span class="top-title" id="boardTitleText">보드 로딩중...</span>
+    </div>
 
-const SUPABASE_URL = "https://txcdfbvcwjazatbfstak.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_coRT89OfO2B31KcbO3DaBw_Z8ccF1uT";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const STORAGE_KEY='offline_kuji_state_v18'; const boardId=new URLSearchParams(location.search).get('id'); let boardTitle='';
-// (기존 함수 대부분 유지) - 핵심만 포함
-const el={queueInput:queueInput,queueBoard:queueBoard,queueNextBtn:queueNextBtn,queueApplyBtn:queueApplyBtn,currentNickDisplay:currentNickDisplay,shuffleBtn:shuffleBtn,randomPickBtn:randomPickBtn,randomPickNotice:randomPickNotice,board:board,logBox:logBox,statusBar:statusBar,statusTotal:statusTotal,statusOpen:statusOpen,imageBox:imageBox,imageInput:imageInput,downloadLogBtn:downloadLogBtn,goResultsBtn:goResultsBtn};
-let state={slotCount:30,numberPool:5,columns:10,rewards:{},slots:[],logs:[],queue:[],prizeImage:''};let saving=false;
-function parseQueueInput(t){return String(t||'').split(/\s*-\s*|\n|,/).map(v=>v.trim()).filter(Boolean)};function shuffle(a){const c=a.slice();for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]]}return c}
-function rewardText(n){if(n===0)return'똥파민';if(!state.rewards[n])return'DDONG';return state.rewards[n].productName||'DDONG'}
-async function saveState(){if(!boardId||saving)return; saving=true; localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); try{const {error}=await supabase.from('kuji_boards').update({state,updated_at:new Date().toISOString()}).eq('id',boardId); if(error) throw error;}catch(e){alert('저장 실패: '+e.message)} finally{saving=false}}
-function renderAll(){el.queueBoard.textContent=state.queue?.length?state.queue.join(' - '):'줄 없음';el.currentNickDisplay.textContent=state.queue?.[0]||'-';const opened=state.slots.filter(s=>s.opened).length;el.statusTotal.innerHTML='<span class="pill-text">총 '+state.slots.length+'장</span>';el.statusOpen.innerHTML='<span class="pill-text">오픈 '+opened+'장</span>';el.board.innerHTML='';el.board.style.gridTemplateColumns='repeat('+(state.columns||10)+',110px)';state.slots.forEach(slot=>{const btn=document.createElement('button');btn.className='ticket'+(slot.opened?(' opened '+(slot.number===0?'lose':'win')):'');btn.innerHTML=slot.opened?('<div class="ticket-content"><div>' + slot.position+'번</div><div>'+(slot.number===0?'DDONG':(state.rewards[slot.number]?.customNumber||slot.number))+'</div><div>'+rewardText(slot.number)+'</div></div>'):('<div class="ticket-content"><div class="ticket-closed-heart"><div class="ticket-closed-heart-label">'+slot.position+'</div></div></div>'); if(!slot.opened)btn.onclick=()=>openSlot(slot.position); el.board.appendChild(btn)});el.logBox.innerHTML=state.logs.map(log=>`<div class="item"><b><a style='color:#111' href="user.html?board_id=${boardId}&nickname=${encodeURIComponent(log.nickname)}">${log.nickname}</a></b> 님이 <b>${log.position}번</b> 오픈<br>결과: <b>${log.reward}</b></div>`).join('')||'<div class="item">아직 기록이 없어.</div>'; if(state.prizeImage){el.imageBox.classList.remove('empty');el.imageBox.innerHTML='<img src="'+state.prizeImage+'" />'} }
-async function openSlot(position){const slot=state.slots.find(s=>s.position===position&&!s.opened); if(!slot||saving)return; const nick=(state.queue?.[0]||'익명').trim()||'익명'; slot.opened=true; slot.openedBy=nick; slot.openedAt=new Date().toISOString(); const reward=rewardText(slot.number); state.logs.unshift({nickname:nick,position:slot.position,number:slot.number,reward,openedAt:slot.openedAt}); renderAll(); await saveState(); const {error}=await supabase.from('kuji_results').insert({board_id:boardId,nickname:nick,position:slot.position,number:slot.number,reward,custom_number:state.rewards[slot.number]?.customNumber||null,product_name:state.rewards[slot.number]?.productName||null,opened_at:slot.openedAt}); if(error)alert('결과 저장 실패: '+error.message); }
-queueApplyBtn.onclick=async()=>{state.queue=parseQueueInput(queueInput.value);renderAll();await saveState()}; queueNextBtn.onclick=async()=>{if(state.queue.length){state.queue.shift();queueInput.value=state.queue.join(' - ');renderAll();await saveState();}}
-shuffleBtn.onclick=async()=>{const unopened=state.slots.filter(s=>!s.opened);const nums=shuffle(unopened.map(s=>s.number));unopened.forEach((s,i)=>s.number=nums[i]);renderAll();await saveState()}; randomPickBtn.onclick=()=>{}; imageBox.onclick=()=>imageInput.click(); imageInput.onchange=(e)=>{const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=async(ev)=>{state.prizeImage=ev.target.result; if(state.prizeImage.length>4_000_000) return alert('이미지 데이터가 너무 커서 저장이 어려울 수 있어.'); renderAll(); await saveState();}; r.readAsDataURL(f)};
-el.goResultsBtn.onclick=()=>location.href='results.html?board_id='+boardId; downloadLogBtn.onclick=()=>{};
-(async()=>{ if(!boardId){alert('보드 id가 없어'); location.href='index.html'; return;} const {data,error}=await supabase.from('kuji_boards').select('*').eq('id',boardId).eq('status','active').maybeSingle(); if(error||!data){alert('보드를 찾을 수 없어.');location.href='index.html';return;} boardTitle=data.title; boardTitleText.textContent='현재 쿠지판: '+boardTitle; state=data.state||state; queueInput.value=(state.queue||[]).join(' - '); renderAll();})();
-</script>
-</body></html>
+    <div class="hero">
+      <div class="title">DDOPAMINE<span>DDOKUJI</span></div>
+      <div class="badge" id="boardNameBadge">보드 로딩중...</div>
+    </div>
+
+    <div class="page-grid">
+      <div class="card">
+        <div class="card-header-pink">줄</div>
+        <div>
+          <label for="queueInput" style="margin:0 0 6px;">줄 입력</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input id="queueInput" placeholder="예: 사용자1 - 사용자2 - 사용자3 - 사용자4" />
+            <button class="secondary" id="queueApplyBtn" style="height:42px; white-space:nowrap; flex:0 0 auto;">확인</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header-cyan">줄현황판</div>
+        <div style="display:grid; grid-template-columns: 1fr 88px; gap:8px; align-items:end;">
+          <div id="queueBoard" style="min-height:42px; border:2px solid #1cecf4; background:#fff; color:#111; padding:10px 12px; font-size:14px; font-weight:700; display:flex; align-items:center; overflow:auto; white-space:nowrap;">줄 없음</div>
+          <button class="secondary" id="queueNextBtn" style="width:100%; height:42px; white-space:nowrap;">탈</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header-cyan">Lucky Number</div>
+        <div id="imageBox" class="image-box empty">이미지 업로드</div>
+        <input type="file" id="imageInput" accept="image/*" style="display:none;" />
+      </div>
+
+      <div class="card">
+        <div class="board-header-row">
+          <div class="board-title">DDOPAMINE DDOKUJI BOARD</div>
+          <div class="board-controls">
+            <div class="pill board-pill">
+              <span class="board-pill-label">현재 진행자 :</span>
+              <span id="currentNickDisplay">-</span>
+            </div>
+            <button class="pill board-pill shuffle-pill" id="shuffleBtn" type="button">
+              <span>Shuffle</span>
+            </button>
+            <button class="pill board-pill shuffle-pill" id="randomPickBtn" type="button">
+              <span>Random Pick</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="status" id="statusBar">
+          <div class="pill" id="statusTotal"><span class="pill-text">총 0장</span></div>
+          <div class="pill" id="statusOpen"><span class="pill-text">오픈 0장</span></div>
+        </div>
+        <div id="randomPickNotice" class="random-pick-notice">추천: -</div>
+
+        <div class="board-shell">
+          <div class="board" id="board"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header-pink" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <span>Open Log</span>
+          <button type="button" class="secondary" id="downloadLogBtn" style="padding:6px 10px; font-size:12px;">Download</button>
+        </div>
+        <div class="list" id="logBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header-pink" style="display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer;" id="settingsToggleBar">
+          <span>Lucky Number &amp; Settings</span>
+          <button type="button" class="secondary" id="settingsToggleBtn" style="padding:6px 10px; font-size:12px;">닫기</button>
+        </div>
+        <div id="settingsContent">
+          <div class="row">
+            <div>
+              <label for="slotCount">총 쿠지 칸 수</label>
+              <input id="slotCount" type="number" min="1" value="30" />
+            </div>
+            <div>
+              <label for="prizeCount">상품 수</label>
+              <input id="prizeCount" type="number" min="0" value="5" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="columns">한 줄 칸 수</label>
+              <input id="columns" type="number" min="2" max="12" value="10" />
+            </div>
+            <div class="muted" style="padding-top:33px;">
+              예: 상품 수를 5로 두고 상품생성을 누르면 등상별로 넘버와 상품명을 따로 넣을 수 있어. 새 판 생성 시 각 등상은 1개씩만 들어가고, 나머지는 전부 DDONG이야.
+            </div>
+          </div>
+
+          <div class="btns" style="margin-top:10px;">
+            <button class="secondary" id="buildPrizeInputsBtn">상품생성</button>
+          </div>
+
+          <div id="prizeInputsWrap"></div>
+
+          <div class="btns">
+            <button class="primary" id="generateBtn">새 판 생성</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="result-ticket">
+        <div class="muted">쿠지가 오픈되었어</div>
+        <div class="reveal-wrap" id="revealWrap">
+          <div class="reveal-base" id="revealBase"></div>
+          <div class="reveal-paper" id="revealPaper"></div>
+          <div class="reveal-hit" id="revealHit"></div>
+        </div>
+        <div class="muted" id="modalInfo"></div>
+        <div class="btns" style="justify-content:center; margin-top:14px;">
+          <button class="secondary" id="quickOpenBtn">확뜯!</button>
+          <button class="primary" id="closeModalBtn">확인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://txcdfbvcwjazatbfstak.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_coRT89OfO2B31KcbO3DaBw_Z8ccF1uT';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const STORAGE_KEY = 'offline_kuji_state_v18';
+    const boardId = new URLSearchParams(location.search).get('id');
+    let boardTitle = '';
+    let saving = false;
+
+    const el = {
+      queueInput: document.getElementById('queueInput'),
+      queueBoard: document.getElementById('queueBoard'),
+      queueNextBtn: document.getElementById('queueNextBtn'),
+      queueApplyBtn: document.getElementById('queueApplyBtn'),
+      currentNickDisplay: document.getElementById('currentNickDisplay'),
+      shuffleBtn: document.getElementById('shuffleBtn'),
+      randomPickBtn: document.getElementById('randomPickBtn'),
+      randomPickNotice: document.getElementById('randomPickNotice'),
+      slotCount: document.getElementById('slotCount'),
+      prizeCount: document.getElementById('prizeCount'),
+      columns: document.getElementById('columns'),
+      buildPrizeInputsBtn: document.getElementById('buildPrizeInputsBtn'),
+      prizeInputsWrap: document.getElementById('prizeInputsWrap'),
+      generateBtn: document.getElementById('generateBtn'),
+      board: document.getElementById('board'),
+      logBox: document.getElementById('logBox'),
+      statusBar: document.getElementById('statusBar'),
+      statusTotal: document.getElementById('statusTotal'),
+      statusOpen: document.getElementById('statusOpen'),
+      modal: document.getElementById('modal'),
+      modalInfo: document.getElementById('modalInfo'),
+      closeModalBtn: document.getElementById('closeModalBtn'),
+      quickOpenBtn: document.getElementById('quickOpenBtn'),
+      downloadLogBtn: document.getElementById('downloadLogBtn'),
+      settingsToggleBar: document.getElementById('settingsToggleBar'),
+      settingsToggleBtn: document.getElementById('settingsToggleBtn'),
+      settingsContent: document.getElementById('settingsContent'),
+      revealBase: document.getElementById('revealBase'),
+      revealWrap: document.getElementById('revealWrap'),
+      revealPaper: document.getElementById('revealPaper'),
+      revealHit: document.getElementById('revealHit'),
+      imageBox: document.getElementById('imageBox'),
+      imageInput: document.getElementById('imageInput'),
+      goResultsBtn: document.getElementById('goResultsBtn'),
+      boardNameBadge: document.getElementById('boardNameBadge'),
+      boardTitleText: document.getElementById('boardTitleText')
+    };
+
+    let state = {
+      slotCount: 30,
+      numberPool: 5,
+      columns: 10,
+      rewards: {},
+      slots: [],
+      logs: [],
+      queue: [],
+      prizeImage: ''
+    };
+
+    let revealDrag = {
+      active: false,
+      opened: false,
+      startX: 0,
+      progress: 0
+    };
+
+    let pendingResult = null;
+    let recommendedPosition = null;
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function shuffle(arr) {
+      const copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function parseQueueInput(text) {
+      return String(text || '')
+        .split(/\s*-\s*|\n|,/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    function currentNickname() {
+      return state.queue && state.queue.length ? state.queue[0] : '-';
+    }
+
+    function renderPrizeInputs(count, rewards) {
+      const prizeCount = Math.max(0, Number(count) || 0);
+      if (prizeCount === 0) {
+        el.prizeInputsWrap.innerHTML = '<div class="muted" style="margin-top:10px;">상품 수를 입력하고 상품생성을 눌러줘.</div>';
+        return;
+      }
+
+      let html = '<div style="margin-top:14px; display:grid; gap:10px;">';
+
+      for (let i = 1; i <= prizeCount; i++) {
+        const reward = rewards && rewards[i] ? rewards[i] : {};
+        const customNumber = reward.customNumber ? escapeHtml(reward.customNumber) : '';
+        const productName = reward.productName ? escapeHtml(reward.productName) : '';
+
+        html +=
+          '<div class="row" style="grid-template-columns:110px 120px 1fr; align-items:center;">' +
+            '<label style="margin:0; color:#ff61bc;">' + i + '등상</label>' +
+            '<input type="text" data-prize-rank="' + i + '" data-prize-field="customNumber" placeholder="넘버" value="' + customNumber + '" />' +
+            '<input type="text" data-prize-rank="' + i + '" data-prize-field="productName" placeholder="상품명" value="' + productName + '" />' +
+          '</div>';
+      }
+
+      html += '</div>';
+      el.prizeInputsWrap.innerHTML = html;
+    }
+
+    function parseRewardsFromInputs() {
+      const map = {};
+      const inputs = el.prizeInputsWrap.querySelectorAll('[data-prize-rank]');
+
+      inputs.forEach(input => {
+        const rank = Number(input.getAttribute('data-prize-rank'));
+        const field = input.getAttribute('data-prize-field');
+        const value = input.value.trim();
+
+        if (!map[rank]) {
+          map[rank] = { customNumber: '', productName: '' };
+        }
+        map[rank][field] = value;
+      });
+
+      return map;
+    }
+
+    function buildNumbers(slotCount, numberPool) {
+      const numbers = [];
+      for (let i = 1; i <= numberPool; i++) numbers.push(i);
+      while (numbers.length < slotCount) numbers.push(0);
+      return shuffle(numbers.slice(0, slotCount));
+    }
+
+    function formatTime(iso) {
+      const d = new Date(iso);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      return y + '-' + m + '-' + day + ' ' + hh + ':' + mm + ':' + ss;
+    }
+
+    function rewardText(number) {
+      if (number === 0) return '똥파민';
+      if (!state.rewards[number]) return 'DDONG';
+      return state.rewards[number].productName || 'DDONG';
+    }
+
+    function rewardDisplay(number) {
+      if (number === 0) {
+        return { numberLabel: 'DDONG', productName: '' };
+      }
+      const reward = state.rewards[number] || {};
+      return {
+        numberLabel: reward.customNumber || String(number),
+        productName: reward.productName || ''
+      };
+    }
+
+    function renderImageBox() {
+      if (!state.prizeImage) {
+        el.imageBox.classList.add('empty');
+        el.imageBox.innerHTML = '이미지 업로드';
+        return;
+      }
+      el.imageBox.classList.remove('empty');
+      el.imageBox.innerHTML = '<img src="' + state.prizeImage + '" alt="Lucky Number Image" />';
+    }
+
+    function setRevealProgress(progress) {
+      const p = Math.max(0, Math.min(1, progress));
+      revealDrag.progress = p;
+      const maxOpen = Math.max(120, el.revealWrap.clientWidth - 36);
+      const revealX = maxOpen * p;
+      el.revealWrap.style.setProperty('--reveal-x', revealX + 'px');
+      if (p >= 0.995) el.revealPaper.classList.add('done');
+      else el.revealPaper.classList.remove('done');
+    }
+
+    function resetRevealDrag() {
+      revealDrag.active = false;
+      revealDrag.opened = false;
+      revealDrag.startX = 0;
+      revealDrag.progress = 0;
+      el.revealWrap.classList.remove('dragging');
+      setRevealProgress(0);
+    }
+
+    function getClientX(evt) {
+      if (typeof evt.clientX === 'number') return evt.clientX;
+      if (evt.touches && evt.touches[0] && typeof evt.touches[0].clientX === 'number') return evt.touches[0].clientX;
+      if (evt.changedTouches && evt.changedTouches[0] && typeof evt.changedTouches[0].clientX === 'number') return evt.changedTouches[0].clientX;
+      return 0;
+    }
+
+    function beginRevealDrag(evt) {
+      const clientX = getClientX(evt);
+      revealDrag.active = true;
+      el.revealWrap.classList.add('dragging');
+      revealDrag.startX = clientX - revealDrag.progress * Math.max(220, el.revealWrap.clientWidth * 0.9);
+    }
+
+    function moveRevealDrag(evt) {
+      if (!revealDrag.active || revealDrag.opened) return;
+      const clientX = getClientX(evt);
+      const delta = Math.max(0, clientX - revealDrag.startX);
+      const threshold = Math.max(220, el.revealWrap.clientWidth * 0.9);
+      setRevealProgress(delta / threshold);
+      if (revealDrag.progress >= 1) revealDrag.opened = true;
+    }
+
+    function endRevealDrag() {
+      revealDrag.active = false;
+      el.revealWrap.classList.remove('dragging');
+    }
+
+    function quickOpenReveal() {
+      revealDrag.opened = true;
+      el.revealWrap.classList.remove('dragging');
+      setRevealProgress(1);
+    }
+
+    function toggleSettings(forceOpen) {
+      const isHidden = el.settingsContent.style.display === 'none';
+      const open = typeof forceOpen === 'boolean' ? forceOpen : isHidden;
+      el.settingsContent.style.display = open ? '' : 'none';
+      el.settingsToggleBtn.textContent = open ? '닫기' : '열기';
+      if (open) el.settingsToggleBar.classList.remove('collapsed-header');
+      else el.settingsToggleBar.classList.add('collapsed-header');
+    }
+
+    function generateBoard() {
+      const slotCount = Math.max(1, Number(el.slotCount.value) || 1);
+      const numberPool = Math.max(0, Number(el.prizeCount.value) || 0);
+      const columns = Math.min(12, Math.max(2, Number(el.columns.value) || 10));
+      const rewards = parseRewardsFromInputs();
+      const numbers = buildNumbers(slotCount, numberPool);
+      const queue = parseQueueInput(el.queueInput.value);
+
+      state = {
+        slotCount,
+        numberPool,
+        columns,
+        rewards,
+        logs: [],
+        queue,
+        prizeImage: state.prizeImage || '',
+        slots: numbers.map((num, idx) => ({
+          position: idx + 1,
+          number: num,
+          opened: false,
+          openedBy: '',
+          openedAt: ''
+        }))
+      };
+
+      pendingResult = null;
+      recommendedPosition = null;
+      saveState(false);
+      renderAll();
+    }
+
+    async function saveState(showMsg) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+      if (boardId && !saving) {
+        saving = true;
+        try {
+          const { error } = await supabase
+            .from('kuji_boards')
+            .update({
+              state: state,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', boardId);
+
+          if (error) throw error;
+        } catch (err) {
+          console.error(err);
+          alert('DB 저장 실패: ' + err.message);
+        } finally {
+          saving = false;
+        }
+      }
+
+      if (showMsg !== false) alert('저장했어.');
+    }
+
+    async function loadBoardFromDb() {
+      if (!boardId) {
+        alert('보드 id가 없어. 메인으로 돌아갈게.');
+        location.href = 'index.html';
+        return false;
+      }
+
+      const { data, error } = await supabase
+        .from('kuji_boards')
+        .select('*')
+        .eq('id', boardId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (error || !data) {
+        console.error(error);
+        alert('보드를 찾을 수 없어.');
+        location.href = 'index.html';
+        return false;
+      }
+
+      boardTitle = data.title || '';
+      el.boardNameBadge.textContent = boardTitle || 'DDOKUJI';
+      el.boardTitleText.textContent = '현재 쿠지판: ' + (boardTitle || '-');
+
+      if (data.state) {
+        state = data.state;
+        if (!Array.isArray(state.queue)) state.queue = [];
+        if (!Array.isArray(state.logs)) state.logs = [];
+        if (!Array.isArray(state.slots)) state.slots = [];
+        if (!state.rewards) state.rewards = {};
+        if (!state.prizeImage) state.prizeImage = '';
+
+        el.slotCount.value = state.slotCount || 30;
+        el.prizeCount.value = state.numberPool || 0;
+        el.columns.value = state.columns || 10;
+        el.queueInput.value = state.queue.join(' - ');
+        renderPrizeInputs(state.numberPool || 0, state.rewards || {});
+        renderAll();
+        return true;
+      }
+
+      return false;
+    }
+
+    function loadState(showMsg) {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        if (showMsg !== false) alert('저장된 데이터가 없어.');
+        return false;
+      }
+      try {
+        state = JSON.parse(raw);
+        if (!Array.isArray(state.queue)) state.queue = [];
+        if (!state.prizeImage) state.prizeImage = '';
+        el.slotCount.value = state.slotCount || 30;
+        el.prizeCount.value = state.numberPool || 0;
+        el.columns.value = state.columns || 10;
+        el.queueInput.value = state.queue.join(' - ');
+        renderPrizeInputs(state.numberPool || 0, state.rewards || {});
+        renderAll();
+        if (showMsg !== false) alert('불러왔어.');
+        return true;
+      } catch (err) {
+        console.error(err);
+        alert('불러오기 실패');
+        return false;
+      }
+    }
+
+    function renderQueueBoard() {
+      el.queueBoard.textContent = state.queue && state.queue.length ? state.queue.join(' - ') : '줄 없음';
+      el.currentNickDisplay.textContent = currentNickname();
+    }
+
+    function syncQueueFromInput() {
+      state.queue = parseQueueInput(el.queueInput.value);
+      saveState(false);
+      renderAll();
+    }
+
+    function advanceQueue() {
+      if (!state.queue || !state.queue.length) return;
+      state.queue.shift();
+      el.queueInput.value = state.queue.join(' - ');
+      saveState(false);
+      renderAll();
+    }
+
+    function renderStatus() {
+      const total = state.slots.length;
+      const opened = state.slots.filter(s => s.opened).length;
+
+      el.statusTotal.innerHTML = '<span class="pill-text">총 ' + total + '장</span>';
+      el.statusOpen.innerHTML = '<span class="pill-text">오픈 ' + opened + '장</span>';
+
+      const oldHearts = el.statusBar.querySelectorAll('.status-heart');
+      oldHearts.forEach(node => node.remove());
+
+      for (let i = 1; i <= state.numberPool; i++) {
+        const stillRemaining = state.slots.some(slot => !slot.opened && slot.number === i);
+
+        const heart = document.createElement('div');
+        heart.className = 'status-heart ' + (stillRemaining ? 'pending' : 'done');
+
+        const label = document.createElement('div');
+        label.className = 'status-heart-label';
+        label.textContent = (state.rewards[i] && state.rewards[i].customNumber) ? state.rewards[i].customNumber : i;
+
+        heart.appendChild(label);
+        el.statusBar.appendChild(heart);
+      }
+    }
+
+    function renderRandomPickNotice() {
+      if (recommendedPosition == null) {
+        el.randomPickNotice.textContent = '추천: -';
+      } else {
+        el.randomPickNotice.textContent = '추천: ' + recommendedPosition + '번';
+      }
+    }
+
+    function renderBoard() {
+      el.board.innerHTML = '';
+      el.board.style.gridTemplateColumns = 'repeat(' + (state.columns || 10) + ', 110px)';
+
+      state.slots.forEach(slot => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ticket';
+
+        if (recommendedPosition === slot.position && !slot.opened) {
+          btn.className += ' recommended';
+        }
+
+        if (slot.opened) btn.className += ' opened ' + (slot.number === 0 ? 'lose' : 'win');
+
+        if (slot.opened) {
+          const display = rewardDisplay(slot.number);
+          btn.disabled = true;
+          btn.innerHTML =
+            '<div class="ticket-content">' +
+              '<div class="ticket-pos">' + slot.position + '번</div>' +
+              '<div class="ticket-main ' + (slot.number === 0 ? 'is-ddong' : 'is-number') + '">' +
+                (slot.number === 0 ? 'DDONG' : escapeHtml(display.numberLabel)) +
+              '</div>' +
+              '<div class="ticket-sub">' + escapeHtml(rewardText(slot.number)) + '</div>' +
+            '</div>';
+        } else {
+          btn.innerHTML =
+            '<div class="ticket-content">' +
+              '<div class="ticket-closed-heart"><div class="ticket-closed-heart-label">' + slot.position + '</div></div>' +
+            '</div>';
+
+          btn.addEventListener('click', function() {
+            openSlot(slot.position);
+          });
+        }
+
+        el.board.appendChild(btn);
+      });
+    }
+
+    function renderLogs() {
+      if (!state.logs.length) {
+        el.logBox.innerHTML = '<div class="item">아직 기록이 없어.</div>';
+        return;
+      }
+
+      el.logBox.innerHTML = state.logs.map(log =>
+        '<div class="item"><b><a style="color:#111" href="user.html?board_id=' + boardId + '&nickname=' + encodeURIComponent(log.nickname) + '">' + escapeHtml(log.nickname) + '</a></b> 님이 <b>' + log.position + '번</b> 오픈<br>결과: <b>' + escapeHtml(log.reward) + '</b><br><span class="muted">' + escapeHtml(formatTime(log.openedAt)) + '</span></div>'
+      ).join('');
+    }
+
+    function escapeCsv(value) {
+      const text = String(value == null ? '' : value);
+      if (/[",\n]/.test(text)) {
+        return '"' + text.replace(/"/g, '""') + '"';
+      }
+      return text;
+    }
+
+    function downloadLogCsv() {
+      const header = ['날짜 및 시간', '사용자', '상품번호', '당첨상품명'];
+
+      const rows = state.logs.map(log => {
+        const display = rewardDisplay(log.number);
+        return [
+          formatTime(log.openedAt),
+          log.nickname,
+          log.number === 0 ? 'DDONG' : display.numberLabel,
+          log.number === 0 ? '똥파민' : display.productName
+        ];
+      });
+
+      const csv = [header].concat(rows).map(row => row.map(escapeCsv).join(',')).join('\r\n');
+
+      const bom = '\uFEFF';
+      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const now = new Date();
+      const filename =
+        'ddokuji_log_' +
+        now.getFullYear() +
+        String(now.getMonth() + 1).padStart(2, '0') +
+        String(now.getDate()).padStart(2, '0') + '_' +
+        String(now.getHours()).padStart(2, '0') +
+        String(now.getMinutes()).padStart(2, '0') +
+        String(now.getSeconds()).padStart(2, '0') +
+        '.csv';
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function renderAll() {
+      renderQueueBoard();
+      renderStatus();
+      renderRandomPickNotice();
+      renderBoard();
+      renderLogs();
+      renderImageBox();
+    }
+
+    async function commitPendingResult() {
+      if (!pendingResult) return;
+
+      const slot = state.slots.find(s => s.position === pendingResult.position);
+
+      if (!slot || slot.opened) {
+        pendingResult = null;
+        return;
+      }
+
+      if (recommendedPosition === pendingResult.position) {
+        recommendedPosition = null;
+      }
+
+      slot.opened = true;
+      slot.openedBy = pendingResult.nickname;
+      slot.openedAt = pendingResult.openedAt;
+
+      state.logs.unshift({
+        nickname: pendingResult.nickname,
+        position: pendingResult.position,
+        number: pendingResult.number,
+        reward: pendingResult.reward,
+        openedAt: pendingResult.openedAt
+      });
+
+      const resultToSave = pendingResult;
+      pendingResult = null;
+      await saveState(false);
+      renderAll();
+
+      if (boardId && resultToSave) {
+        const display = rewardDisplay(resultToSave.number);
+        const { error } = await supabase
+          .from('kuji_results')
+          .insert({
+            board_id: boardId,
+            nickname: resultToSave.nickname,
+            position: resultToSave.position,
+            number: resultToSave.number,
+            reward: resultToSave.reward,
+            custom_number: resultToSave.number === 0 ? null : display.numberLabel,
+            product_name: resultToSave.number === 0 ? null : display.productName,
+            opened_at: resultToSave.openedAt
+          });
+
+        if (error) {
+          console.error(error);
+          alert('결과 저장 실패: ' + error.message);
+        }
+      }
+    }
+
+    function shuffleUnopenedSlots() {
+      if (pendingResult || el.modal.classList.contains('show')) return;
+
+      const unopened = state.slots.filter(slot => !slot.opened);
+      if (unopened.length <= 1) return;
+
+      const numbers = unopened.map(slot => slot.number);
+      const shuffledNumbers = shuffle(numbers);
+
+      unopened.forEach((slot, index) => {
+        slot.number = shuffledNumbers[index];
+      });
+
+      recommendedPosition = null;
+
+      el.board.classList.remove('shuffling');
+      void el.board.offsetWidth;
+      el.board.classList.add('shuffling');
+
+      setTimeout(() => {
+        el.board.classList.remove('shuffling');
+      }, 520);
+
+      saveState(false);
+      renderAll();
+    }
+
+    function randomPickSlot() {
+      if (pendingResult || el.modal.classList.contains('show')) return;
+
+      const unopened = state.slots.filter(slot => !slot.opened);
+      if (!unopened.length) {
+        recommendedPosition = null;
+        renderAll();
+        return;
+      }
+
+      const picked = unopened[Math.floor(Math.random() * unopened.length)];
+      recommendedPosition = picked.position;
+      renderAll();
+
+      setTimeout(function() {
+        const buttons = el.board.querySelectorAll('.ticket');
+        buttons.forEach(function(btn) {
+          if (btn.classList.contains('recommended')) {
+            btn.classList.remove('recommended');
+            void btn.offsetWidth;
+            btn.classList.add('recommended');
+          }
+        });
+      }, 10);
+    }
+
+    function openSlot(position) {
+      if (el.modal.classList.contains('show')) return;
+
+      const nick = currentNickname() === '-' ? '익명' : currentNickname();
+
+      for (let i = 0; i < state.slots.length; i++) {
+        if (state.slots[i].position === position && !state.slots[i].opened) {
+          const reward = rewardText(state.slots[i].number);
+
+          pendingResult = {
+            nickname: nick,
+            position: state.slots[i].position,
+            number: state.slots[i].number,
+            reward: reward,
+            openedAt: new Date().toISOString()
+          };
+
+          showModal(state.slots[i].number, nick, pendingResult.openedAt);
+          break;
+        }
+      }
+    }
+
+    function showModal(number, nick, openedAt) {
+      const lose = number === 0;
+      const display = rewardDisplay(number);
+
+      el.revealBase.className = 'reveal-base' + (lose ? ' lose' : '');
+
+      if (lose) {
+        el.revealBase.innerHTML =
+          '<div class="reveal-result-ddong">DDONG</div>';
+      } else {
+        el.revealBase.innerHTML =
+          '<div class="reveal-result-line">' +
+            '<div class="reveal-result-inline">' +
+              '<div class="reveal-result-number">' + escapeHtml(display.numberLabel) + '</div>' +
+              '<div class="reveal-result-name">' + escapeHtml(display.productName) + '</div>' +
+            '</div>' +
+          '</div>';
+      }
+
+      setRevealProgress(0);
+      el.modalInfo.innerHTML =
+        '닉네임: <b>' + escapeHtml(nick) + '</b><br>오픈 시각: <b>' + escapeHtml(formatTime(openedAt)) + '</b>';
+      el.modal.classList.add('show');
+    }
+
+    el.imageBox.addEventListener('click', function() {
+      el.imageInput.click();
+    });
+
+    el.imageInput.addEventListener('change', function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        state.prizeImage = evt.target.result;
+        saveState(false);
+        renderImageBox();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    el.buildPrizeInputsBtn.addEventListener('click', function() {
+      renderPrizeInputs(el.prizeCount.value, parseRewardsFromInputs());
+    });
+
+    el.generateBtn.addEventListener('click', function() {
+      generateBoard();
+      alert('새 판을 만들었어.');
+    });
+
+    el.shuffleBtn.addEventListener('click', function() {
+      shuffleUnopenedSlots();
+    });
+
+    el.randomPickBtn.addEventListener('click', function() {
+      randomPickSlot();
+    });
+
+    el.quickOpenBtn.addEventListener('click', function() {
+      quickOpenReveal();
+    });
+
+    el.closeModalBtn.addEventListener('click', function() {
+      el.modal.classList.remove('show');
+      resetRevealDrag();
+      commitPendingResult();
+    });
+
+    el.modal.addEventListener('click', function(e) {
+      if (e.target === el.modal) {
+        el.modal.classList.remove('show');
+        resetRevealDrag();
+        commitPendingResult();
+      }
+    });
+
+    el.revealHit.addEventListener('pointerdown', function(e) {
+      beginRevealDrag(e);
+      try {
+        el.revealHit.setPointerCapture(e.pointerId);
+      } catch (err) {}
+    });
+
+    el.revealHit.addEventListener('pointermove', function(e) {
+      moveRevealDrag(e);
+    });
+
+    window.addEventListener('pointerup', function() {
+      endRevealDrag();
+    });
+
+    el.revealHit.addEventListener('touchstart', function(e) {
+      beginRevealDrag(e);
+    }, { passive: false });
+
+    el.revealHit.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+      moveRevealDrag(e);
+    }, { passive: false });
+
+    window.addEventListener('touchend', function() {
+      endRevealDrag();
+    }, { passive: true });
+
+    el.queueInput.addEventListener('change', syncQueueFromInput);
+    el.queueApplyBtn.addEventListener('click', syncQueueFromInput);
+    el.queueInput.addEventListener('blur', syncQueueFromInput);
+    el.queueNextBtn.addEventListener('click', advanceQueue);
+
+    el.settingsToggleBar.addEventListener('click', function(e) {
+      if (e.target === el.settingsToggleBtn) return;
+      toggleSettings();
+    });
+
+    el.settingsToggleBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleSettings();
+    });
+
+    el.downloadLogBtn.addEventListener('click', function() {
+      downloadLogCsv();
+    });
+
+    el.goResultsBtn.addEventListener('click', function() {
+      location.href = 'results.html?board_id=' + boardId;
+    });
+
+    el.queueInput.value = '사용자1 - 사용자2 - 사용자3 - 사용자4';
+
+    renderPrizeInputs(el.prizeCount.value, {
+      1: { customNumber: '1', productName: '1등상' },
+      2: { customNumber: '2', productName: '2등상' },
+      3: { customNumber: '3', productName: '3등상' },
+      4: { customNumber: '4', productName: '4등상' },
+      5: { customNumber: '5', productName: '5등상' }
+    });
+
+    toggleSettings(true);
+
+    (async function initBoard() {
+      const loaded = await loadBoardFromDb();
+
+      if (!loaded || !state.slots || !state.slots.length) {
+        generateBoard();
+      } else {
+        renderAll();
+      }
+    })();
+  </script>
+</body>
+</html>
